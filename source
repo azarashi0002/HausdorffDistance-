@@ -1,0 +1,40 @@
+#include<Siv3D.hpp>	//OpenSiv3D(0.4.2)
+
+void Main() {
+	const Font font(40);
+
+	std::array<Array<Vec2>, 2> points;
+	std::array<Polygon, 2> polygons;
+
+	while (System::Update()) {
+		const Vec2 cursorPos = Cursor::PosF();
+
+		if (MouseL.down()) {
+			points[0] << cursorPos;
+			polygons[0] = Geometry2D::ConvexHull(points[0]);
+		}
+		if (MouseR.down()) {
+			points[1] << cursorPos;
+			polygons[1] = Geometry2D::ConvexHull(points[1]);
+		}
+
+		const double distance = Geometry2D::HausdorffDistance(LineString(points[0]), LineString(points[1]));
+		font(distance).draw(Vec2{ 0,40 });
+
+		polygons[0].draw(ColorF(Palette::Orange, 0.5));
+		polygons[1].draw(ColorF(Palette::Lightblue, 0.5));
+
+		for (const auto& i : points[0]) {
+			Circle(i, 5.0).draw(Palette::Red);
+		}
+		for (const auto& i : points[1]) {
+			Circle(i, 5.0).draw(Palette::Blue);
+		}
+
+		if (SimpleGUI::Button(U"Reset", { 0,0 })) {
+			points[0].clear();
+			points[1].clear();
+			polygons[0] = polygons[1] = Polygon();
+		}
+	}
+}
